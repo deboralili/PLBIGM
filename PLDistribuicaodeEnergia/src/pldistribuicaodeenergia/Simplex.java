@@ -289,7 +289,8 @@ public class Simplex {
     public boolean solucaoOtima() {
 
         //Tem parcela negativa na linha z?
-        for (int i = 0; i <= this.z.size(); i++) {
+        //Analisando somente as variaveis de custo
+        for (int i = 0; i < 108; i++) {
             if (this.z.get(i) < 0) {
                 return false;
             }
@@ -435,7 +436,7 @@ public class Simplex {
 
         for (int i = 0; i < this.z.size(); i++) {       //percorre coluna
             if (i != posicaoColunaPivo) {                //Se nao for a coluna que já foi modificada
-                if (i == 129) {
+                if (i != 129) {
                     numero = this.z.get(i);
                     numeroUm = this.z.get(posicaoColunaPivo);
                     numeroDois = this.quadro.get(posicaoLinhaPivo).get(i);
@@ -531,22 +532,30 @@ public class Simplex {
     }
 
     public int solucao() {
-        //Na lista de variaveis basicas eu acho a variavel de custo que está relacionada
+       Variavel em;
+        for (int i = 0; i < this.basica.size(); i++) {
+            if(this.basica.get(i).getIDofer() == 9){
+                em = this.basica.get(i);
+                return em.getIDemp();
+            }
+        }
+        return -1;
+    }
+}
+ //Na lista de variaveis basicas eu acho a variavel de custo que está relacionada
         //com o número 2290 que será encontrado na coluna b
 
         //A posição em que se encontra a variavel de custo na lista de variaveis basica
         //é a mesma posição em que se encontra o número 2290 na coluna b
-        //Ao encontrar a variavel de custo, pega a empresa que está relacionada
-        int posicao = -1;
-
-        for (int i = 0; i < this.b.size(); i++) {
-            if (this.b.get(i) == 2290) {
-                posicao = i;
-            }
-        }
-
-        Variavel em = this.basica.get(posicao);
-
-        return em.getIDemp();
-    }
-}
+//        //Ao encontrar a variavel de custo, pega a empresa que está relacionada
+//        int posicao = -1;
+//
+//        for (int i = 0; i < this.b.size(); i++) {
+//            if (this.b.get(i) == 2290) {
+//                posicao = i;
+//            }
+//        }
+//
+//        Variavel em = this.basica.get(posicao);
+//
+//        return em.getIDemp();

@@ -71,9 +71,11 @@ public class PLDistribuicaodeEnergia {
         //Ajute Inicial
         
         matriz.ajusteInicial();
-        
+        int a=0;
         while (matriz.solucaoOtima() == false){
             matriz.algoritmo();
+            
+            System.out.println("Quantidade de iteracao " + a++);
         }
         
         System.out.println("Empresa que nao vai receber: " + matriz.solucao());
