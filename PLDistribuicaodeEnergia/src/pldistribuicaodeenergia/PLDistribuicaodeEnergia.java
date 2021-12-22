@@ -71,7 +71,9 @@ public class PLDistribuicaodeEnergia {
         //Ajute Inicial
         
         matriz.ajusteInicial();
+        
         int a=0;
+        
         while (matriz.solucaoOtima() == false){
             matriz.algoritmo();
             
@@ -79,6 +81,22 @@ public class PLDistribuicaodeEnergia {
         }
         
         System.out.println("Empresa que nao vai receber: " + matriz.solucao());
+        
+        int valorA = 0;
+        int custo = 0;
+        
+        for (int i = 0; i < matriz.basica.size(); i++) {
+            valorA = valorA + matriz.b.get(i);
+            custo = custo + matriz.basica.get(i).valor;
+            
+            System.out.println("Empresa : " + matriz.basica.get(i).getIDemp());
+            System.out.println("Ofertante : " + matriz.basica.get(i).getIDofer());
+            System.out.println("ValorA : " + matriz.b.get(i));
+            
+        }
+        
+        System.out.println("Valor Total: " + valorA);
+        System.out.println("Custo Total: " + custo);
     }
 
 }

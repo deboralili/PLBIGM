@@ -55,7 +55,7 @@ public class Simplex {
         }
 
         //Em relação a variaveis de custo
-            //tem 1 quando:
+        //tem 1 quando:
         //Todos os a1 intersedem com oferta1
         //Todos os a2 intersedem com oferta2
         //Todos os a3 intersedem com oferta3
@@ -65,7 +65,6 @@ public class Simplex {
         //Todos os a7 intersedem com oferta7
         //Todos os a8 intersedem com oferta8
         //Todos os a9 intersedem com oferta9
-        
         //Todos os a10 intersedem com empresa1
         //Todos os a11 intersedem com empresa2
         //Todos os a12 intersedem com empresa3
@@ -78,7 +77,6 @@ public class Simplex {
         //Todos os a19 intersedem com empresa10
         //Todos os a20 intersedem com empresa11
         //Todos os a21 intersedem com empresa12
-        
         for (int i = 0; i < this.basica.size(); i++) {
             for (int j = 0; j < this.listaVariaveisCusto.size(); j++) {
 
@@ -86,22 +84,22 @@ public class Simplex {
                     //Funciona de a1 a a9 pois as ofertas vao ter o mesmo id
                     if (this.listaVariaveisCusto.get(j).getIDofer() == this.basica.get(i).getIDofer()) {
                         this.quadro.get(i).set(j, 1);
-                    }else{
+                    } else {
                         this.quadro.get(i).set(j, 0);
                     }
-                }else{
-                    
+                } else {
+
                     //Funciona de a10 a a21 pois o id da empresa é o id da artificial - 9
-                    if (this.listaVariaveisCusto.get(j).getIDemp() == this.basica.get(i).getIDemp()-9 ){
+                    if (this.listaVariaveisCusto.get(j).getIDemp() == this.basica.get(i).getIDemp() - 9) {
                         this.quadro.get(i).set(j, 1);
-                    }else{
+                    } else {
                         this.quadro.get(i).set(j, 0);
                     }
                 }
 
             }
         }
-        
+
     }
 
 //Definir linha z
@@ -290,12 +288,18 @@ public class Simplex {
 
         //Tem parcela negativa na linha z?
         //Analisando somente as variaveis de custo
-        for (int i = 0; i < 108; i++) {
+        for (int i = 0; i < this.z.size() - 1; i++) {
             if (this.z.get(i) < 0) {
                 return false;
             }
         }
 
+//        //Analisando se tem variavel artificial na lista de variaveis basica
+//        for (int i = 0; i < this.basica.size(); i++) {
+//            if(this.listaArtificiais.contains(this.basica.get(i))){
+//                return false;
+//            }
+//        }
         return true;
     }
 
@@ -303,10 +307,23 @@ public class Simplex {
 
         int posicaoColunaPivo = colunaPivo();
         int posicaoLinhaPivo = linhaPivo(posicaoColunaPivo);
+
+        ArrayList<Integer> colunaPivoAntiga = new ArrayList<Integer>();
+
+        for (int i = 0; i < this.quadro.size(); i++) {
+            int numero = this.quadro.get(i).get(posicaoColunaPivo); //Vai guardar como era a coluna pivo antes das
+            //alterações, pois vai ser necessário ao escalonar b
+            colunaPivoAntiga.add(numero);
+        }
+
+        int zColunaPivoAntiga;
+
+        zColunaPivoAntiga = z.get(posicaoColunaPivo);
+
         escalonamentoInicial(posicaoColunaPivo, posicaoLinhaPivo);
-        escalonamentoMatriz(posicaoLinhaPivo, posicaoColunaPivo);
-        escalonamentoB(posicaoLinhaPivo, posicaoColunaPivo);
-        escalonamentoZ(posicaoLinhaPivo, posicaoColunaPivo);
+        escalonamentoMatriz(posicaoLinhaPivo, posicaoColunaPivo, colunaPivoAntiga);
+        escalonamentoB(posicaoLinhaPivo, posicaoColunaPivo, colunaPivoAntiga);
+        escalonamentoZ(posicaoLinhaPivo, posicaoColunaPivo, zColunaPivoAntiga);
     }
 
     //Determina parcela mais negativa na linha z dentre as variaveis, exceto lucro
@@ -358,10 +375,13 @@ public class Simplex {
             if (this.quadro.get(i).get(colunaPivoPosicao) == 0) {
                 temp.add(-1);
             } else {
-
-                //Guarda o valor das contas
-                num = this.b.get(i) / this.quadro.get(i).get(colunaPivoPosicao);
-                temp.add(num);
+                if (this.quadro.get(i).get(colunaPivoPosicao) > 0) {
+                    //Guarda o valor das contas
+                    num = this.b.get(i) / this.quadro.get(i).get(colunaPivoPosicao);
+                    temp.add(num);
+                }else{
+                    temp.add(-1);
+                }
             }
         }
 
@@ -392,12 +412,13 @@ public class Simplex {
 
         int numeroNovo, numero;
         ArrayList<Integer> temp = new ArrayList<Integer>();
+        int numeroPivo = this.quadro.get(posicaoLinhaPivo).get(posicaoColunaPivo);
 
         //A alteração deve ocorrer primeiro na linha pivo
         //Pega toda a linha pivo e divide pelo numero pivo
-        for (int j = 0; j < this.quadro.get(posicaoLinhaPivo).size(); j++) { //percorre coluna
+        for (int j = 0; j < this.cabecalho.size(); j++) { //percorre coluna
             numero = this.quadro.get(posicaoLinhaPivo).get(j);
-            numeroNovo = numero / this.quadro.get(posicaoLinhaPivo).get(posicaoColunaPivo);
+            numeroNovo = numero / numeroPivo;
             temp.add(numeroNovo);
         }
 
@@ -419,7 +440,7 @@ public class Simplex {
 
         //Alterar b
         numero = this.b.get(posicaoLinhaPivo);
-        numeroNovo = numero / this.quadro.get(posicaoLinhaPivo).get(posicaoColunaPivo);
+        numeroNovo = numero / numeroPivo;
         this.b.set(posicaoLinhaPivo, numeroNovo);
 
         //Alterar z
@@ -430,7 +451,7 @@ public class Simplex {
         atualizaVBeVNB(posicaoLinhaPivo, posicaoColunaPivo);
     }
 
-    public void escalonamentoZ(int posicaoLinhaPivo, int posicaoColunaPivo) {
+    public void escalonamentoZ(int posicaoLinhaPivo, int posicaoColunaPivo, int zColunaPivoAntiga) {
 
         int numeroUm, numeroDois, numero, numeroNovo;
 
@@ -438,7 +459,7 @@ public class Simplex {
             if (i != posicaoColunaPivo) {                //Se nao for a coluna que já foi modificada
                 if (i != 129) {
                     numero = this.z.get(i);
-                    numeroUm = this.z.get(posicaoColunaPivo);
+                    numeroUm = zColunaPivoAntiga;
                     numeroDois = this.quadro.get(posicaoLinhaPivo).get(i);
 
                     numeroNovo = numero - (numeroUm * numeroDois);
@@ -446,7 +467,7 @@ public class Simplex {
                     this.z.set(i, numeroNovo);
                 } else {
                     numero = this.z.get(i);
-                    numeroUm = this.z.get(posicaoColunaPivo);
+                    numeroUm = zColunaPivoAntiga;
                     numeroDois = this.b.get(posicaoLinhaPivo);
 
                     numeroNovo = numero - (numeroUm * numeroDois);
@@ -458,7 +479,7 @@ public class Simplex {
         }
     }
 
-    public void escalonamentoB(int posicaoLinhaPivo, int posicaoColunaPivo) {
+    public void escalonamentoB(int posicaoLinhaPivo, int posicaoColunaPivo, ArrayList<Integer> colunaPivoAntiga) {
 
         int numeroUm, numeroDois, numero, numeroNovo;
 
@@ -466,7 +487,7 @@ public class Simplex {
             if (i != posicaoLinhaPivo) {                //Se nao for a linha que já foi modificada
 
                 numero = this.b.get(i);
-                numeroUm = this.quadro.get(i).get(posicaoColunaPivo);
+                numeroUm = colunaPivoAntiga.get(i);    //numero que está na coluna pivo que não tinha sido alterada ainda
                 numeroDois = this.b.get(posicaoLinhaPivo);
 
                 numeroNovo = numero - (numeroUm * numeroDois);
@@ -478,7 +499,7 @@ public class Simplex {
 
     }
 
-    public void escalonamentoMatriz(int posicaoLinhaPivo, int posicaoColunaPivo) {
+    public void escalonamentoMatriz(int posicaoLinhaPivo, int posicaoColunaPivo, ArrayList<Integer> colunaPivoAntiga) {
 
         //Percorre toda a quadro menos a linha pivo que ja foi alterada
         //Continha
@@ -490,12 +511,12 @@ public class Simplex {
         for (int i = 0; i < this.quadro.size(); i++) {       //percorre linha
             if (i != posicaoLinhaPivo) {                //Se nao for a linha que já foi modificada
 
-                for (int j = 0; j < this.quadro.get(i).size(); j++) {  //percorre coluna
+                for (int j = 0; j < this.cabecalho.size(); j++) {  //percorre coluna
 
                     if (j != posicaoColunaPivo) {                 //Se não foi a coluna que já foi modificada
 
                         numero = this.quadro.get(i).get(j);
-                        numeroUm = this.quadro.get(i).get(posicaoColunaPivo);
+                        numeroUm = colunaPivoAntiga.get(i);
                         numeroDois = this.quadro.get(posicaoLinhaPivo).get(j);
 
                         numeroNovo = numero - (numeroUm * numeroDois);
@@ -523,7 +544,7 @@ public class Simplex {
 
         //A coluna mostra quem está entrando
         //O que está na coluna entra na lista de variaveis basicas
-        variavelNaoBasicaAtual = this.naoBasica.get(posicaoColunaPivo);
+        variavelNaoBasicaAtual = this.cabecalho.get(posicaoColunaPivo);
 
         //Fazendo a troca
         this.basica.set(posicaoLinhaPivo, variavelNaoBasicaAtual);
@@ -532,9 +553,9 @@ public class Simplex {
     }
 
     public int solucao() {
-       Variavel em;
+        Variavel em;
         for (int i = 0; i < this.basica.size(); i++) {
-            if(this.basica.get(i).getIDofer() == 9){
+            if (this.basica.get(i).getIDofer() == 9) {
                 em = this.basica.get(i);
                 return em.getIDemp();
             }
@@ -543,10 +564,10 @@ public class Simplex {
     }
 }
  //Na lista de variaveis basicas eu acho a variavel de custo que está relacionada
-        //com o número 2290 que será encontrado na coluna b
+//com o número 2290 que será encontrado na coluna b
 
         //A posição em que se encontra a variavel de custo na lista de variaveis basica
-        //é a mesma posição em que se encontra o número 2290 na coluna b
+//é a mesma posição em que se encontra o número 2290 na coluna b
 //        //Ao encontrar a variavel de custo, pega a empresa que está relacionada
 //        int posicao = -1;
 //
